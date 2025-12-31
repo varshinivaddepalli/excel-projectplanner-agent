@@ -1,0 +1,7 @@
+node_modules/
+.env
+__pycache__/
+venv/
+intake_questionaire.txt
+wbs_with_dependencies.xlsx
+output/

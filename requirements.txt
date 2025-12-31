@@ -1,0 +1,22 @@
+# PM Agent - Project Intake Questionnaire Dependencies
+
+# LangChain and LangGraph
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langgraph>=0.0.20
+
+# Azure OpenAI
+openai>=1.0.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# Excel generation
+openpyxl>=3.1.0
+
+# State validation
+pydantic>=2.0.0
+
+# FastAPI
+fastapi>=0.100.0
+uvicorn>=0.23.0
