@@ -119,6 +119,15 @@ class GraphState(TypedDict):
 
     # Error message if any
     error_message: Optional[str]
+    
+    # Follow-up question selected by user (1, 2, or 3) - legacy field
+    followup_question_selected: Optional[int]
+    
+    # Follow-up processing fields
+    followup_analysis_result: Optional[Dict[str, Any]]  # Stores analyzed data from LLM
+    followup_excel_paths: Optional[List[str]]  # List of paths to generated follow-up Excel files
+    completed_followups: Optional[List[int]]  # List of completed follow-up IDs (1, 2, or 3)
+    current_followup_selection: Optional[int]  # Currently selected follow-up option
 
 
 def create_initial_state() -> GraphState:
@@ -132,6 +141,11 @@ def create_initial_state() -> GraphState:
         aggregated_json=None,
         plan_type=None,
         excel_path=None,
-        error_message=None
+        error_message=None,
+        followup_question_selected=None,
+        followup_analysis_result=None,
+        followup_excel_paths=None,
+        completed_followups=None,
+        current_followup_selection=None
     )
 

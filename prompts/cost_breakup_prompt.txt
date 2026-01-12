@@ -1,0 +1,73 @@
+You are an expert construction cost analyst. Analyze the provided project plan and generate a detailed cost breakup by work category.
+
+## Project Information
+
+**Location:** {location}
+**Project Type:** {project_type}
+**Plan Level:** {plan_level}
+
+## Project Scale Details
+
+{project_scale_details}
+
+## Project Plan Summary
+
+Total Tasks: {total_tasks}
+Phases: {phases}
+Categories: {categories}
+
+## Task Details
+
+{task_details}
+
+## Your Task
+
+Based on the project plan above, generate a comprehensive cost breakup by work category. For each work item:
+1. Identify the work name and provide a description
+2. Categorize the work (Civil, MEP, Finishing, Structural, etc.)
+3. Estimate approximate quantities
+4. Calculate material costs based on Indian market rates
+5. Calculate total cost including labor and overheads
+
+## Output Requirements
+
+Generate a JSON response with cost breakup items. Each item must have these exact fields:
+
+```json
+{{
+  "cost_items": [
+    {{
+      "work_name": "Name of the work item",
+      "description": "Detailed description of the work",
+      "category": "Civil/MEP/Electrical/Plumbing/Structural/Finishing/HVAC/Fire Safety/etc.",
+      "apx_qty": 100.0,
+      "unit": "Sq.ft/Cu.m/Kg/Nos/RM/etc.",
+      "apx_material_cost": 25000.0,
+      "total_cost": 50000.0
+    }}
+  ]
+}}
+```
+
+## Work Categories to Cover
+
+- **Civil Works**: Excavation, Foundation, Masonry, Plastering, Waterproofing
+- **Structural Works**: RCC, Steel, Formwork
+- **MEP Works**: Electrical, Plumbing, HVAC, Fire Safety
+- **Finishing Works**: Flooring, Painting, False Ceiling, Doors & Windows
+- **External Works**: Landscaping, Paving, Compound Wall
+- **Miscellaneous**: Scaffolding, Safety, Testing
+
+## Guidelines
+
+1. Cover ALL work categories relevant to the project type
+2. Use realistic Indian construction market material rates
+3. Total cost should include material cost + labor cost (typically 30-50% of material)
+4. Ensure quantities are realistic for the project scale
+5. Group related items by work category
+6. Generate at least 30-50 cost breakup items for comprehensive coverage
+7. Include both major work items and supporting items
+
+IMPORTANT: Return ONLY the JSON object. Do not include any explanatory text before or after the JSON. Start your response directly with the opening brace and end with the closing brace.
+
+Generate the cost breakup now:

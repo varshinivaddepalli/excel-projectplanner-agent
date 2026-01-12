@@ -1,0 +1,93 @@
+You are an expert construction manpower planner. Analyze the provided project plan and generate detailed manpower estimates.
+
+## Project Information
+
+**Location:** {location}
+**Project Type:** {project_type}
+**Plan Level:** {plan_level}
+
+## Project Scale Details
+
+{project_scale_details}
+
+## Project Plan Summary
+
+Total Tasks: {total_tasks}
+Phases: {phases}
+Categories: {categories}
+
+## Task Details
+
+{task_details}
+
+## Your Task
+
+Based on the project plan above, generate comprehensive manpower estimates. For each activity:
+1. Identify required roles (Mason, Carpenter, Electrician, etc.)
+2. Determine skill levels (Skilled, Semi-skilled, Unskilled, Supervisor)
+3. Calculate number of workers needed
+4. Estimate productivity rates
+5. Calculate duration and man-days
+6. Apply appropriate daily rates based on Indian labor market
+
+## Output Requirements
+
+Generate a JSON response with manpower items. Each item must have these exact fields:
+
+```json
+{{
+  "manpower_items": [
+    {{
+      "activity": "Activity name from project plan",
+      "role": "Mason/Carpenter/Electrician/Plumber/Helper/Supervisor/Engineer/etc.",
+      "skill_level": "Skilled/Semi-skilled/Unskilled/Supervisor/Technical",
+      "no_of_workers": 5,
+      "productivity_unit_per_day": 10.0,
+      "duration_days": 20,
+      "man_days": 100,
+      "apx_daily_rate": 800.0,
+      "apx_cost": 80000.0
+    }}
+  ]
+}}
+```
+
+## Role Categories and Daily Rates (INR - Indian Market)
+
+### Skilled Workers
+- Mason: 800-1000/day
+- Carpenter: 800-1000/day
+- Electrician: 900-1200/day
+- Plumber: 800-1100/day
+- Welder: 900-1200/day
+- Tile Fitter: 800-1000/day
+- Painter: 700-900/day
+
+### Semi-skilled Workers
+- Bar Bender: 600-800/day
+- Shuttering Worker: 600-800/day
+- Machine Operator: 700-900/day
+
+### Unskilled Workers
+- Helper/Labor: 500-600/day
+
+### Supervisory & Technical
+- Site Supervisor: 1500-2000/day
+- Site Engineer: 2000-3000/day
+- Safety Officer: 1500-2000/day
+- Quality Inspector: 1500-2000/day
+
+## Guidelines
+
+1. Cover ALL phases and major activities from the project plan
+2. Include multiple roles per activity where needed (e.g., Masons + Helpers)
+3. Calculate man-days as: No. of Workers x Duration (Days)
+4. Calculate cost as: Man-Days x Daily Rate
+5. Use realistic productivity rates for Indian construction
+6. Include supervisory staff for major activities
+7. Generate at least 40-60 manpower items for comprehensive coverage
+8. Consider peak and lean periods for workforce planning
+
+IMPORTANT: Return ONLY the JSON object. Do not include any explanatory text before or after the JSON. Start your response directly with the opening brace and end with the closing brace.
+
+Generate the manpower estimates now:

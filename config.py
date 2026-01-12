@@ -57,6 +57,13 @@ START_DATE_OPTIONS = [
     "Custom Date"
 ]
 
+# Follow-up questions after Excel generation
+FOLLOWUP_QUESTIONS = [
+    {"id": 1, "question": "Do you want a budget estimate for this project?"},
+    {"id": 2, "question": "Do you want a cost breakup by work category?"},
+    {"id": 3, "question": "Do you want manpower estimates?"}
+]
+
 # High-level plan columns
 HIGH_LEVEL_COLUMNS = [
     "Phase Name",
@@ -90,3 +97,41 @@ OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
 # Prompts directory
 PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
 
+# Follow-up Excel column definitions
+
+# Question 1 - Budget Estimate columns
+BUDGET_ESTIMATE_COLUMNS = [
+    "Phase",
+    "Activity",
+    "Cost Head",
+    "Budget Type",
+    "Apx.Qty",
+    "Unit",
+    "Rate",
+    "Apx.Budget",
+    "Contingency %"
+]
+
+# Question 2 - Cost Breakup by Work Category columns
+COST_BREAKUP_COLUMNS = [
+    "Work Name",
+    "Description",
+    "Category",
+    "Apx.Qty",
+    "Unit",
+    "Apx. Material Cost",
+    "Total Cost"
+]
+
+# Question 3 - Manpower Estimates columns
+MANPOWER_ESTIMATE_COLUMNS = [
+    "Activity",
+    "Role",
+    "Skill Level",
+    "No. of Workers",
+    "Productivity (Unit/Day)",
+    "Duration (Days)",
+    "Man-Days",
+    "Apx. Daily Rate",
+    "Apx. Cost"
+]

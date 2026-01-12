@@ -18,6 +18,18 @@ from nodes.orchestrator import orchestrator_node
 from nodes.workers import category_worker_node
 from nodes.aggregator import aggregator_node
 from nodes.excel_generator import excel_generator_node
+from nodes.followup_handler import (
+    followup_handler_node,
+    should_continue_followup,
+    check_followup_completion
+)
+from nodes.followup_analyzers import (
+    budget_analyzer_node,
+    cost_breakup_analyzer_node,
+    manpower_analyzer_node
+)
+from nodes.followup_excel_generator import followup_excel_generator_node
+from config import FOLLOWUP_QUESTIONS
 
 
 def should_continue_after_validation(state: GraphState) -> Literal["continue", "error"]:
@@ -41,17 +53,45 @@ def error_handler_node(state: GraphState) -> GraphState:
     return state
 
 
+def show_final_summary(final_state: GraphState) -> None:
+    """
+    Display final summary after all follow-ups are completed.
+    
+    Args:
+        final_state: Final graph state
+    """
+    print("\n" + "=" * 70)
+    print("   🎉 ALL ANALYSES COMPLETED!")
+    print("=" * 70)
+    
+    # Show main project plan
+    if final_state.get("excel_path"):
+        print(f"\n📂 Project Plan: {final_state['excel_path']}")
+        print(f"   Total tasks: {final_state.get('aggregated_json', {}).get('total_tasks', 0)}")
+    
+    # Show follow-up Excel files
+    followup_paths = final_state.get("followup_excel_paths", [])
+    if followup_paths:
+        print(f"\n📊 Follow-up Analyses ({len(followup_paths)} files):")
+        for path in followup_paths:
+            print(f"   • {path}")
+    
+    print("\n" + "=" * 70)
+
+
 def build_graph() -> StateGraph:
     """
-    Build the LangGraph workflow with comprehensive task generation.
+    Build the LangGraph workflow with comprehensive task generation and follow-up processing.
     
     Flow:
     Questionnaire → Validation → Prompt → Orchestrator → 
-    Category Workers → Aggregator → Excel Generator
+    Category Workers → Aggregator → Excel Generator → 
+    Follow-up Handler → [Budget/Cost/Manpower Analyzer] → 
+    Follow-up Excel Generator → (loop back or END)
     """
     workflow = StateGraph(GraphState)
     
-    # Add all nodes
+    # Add all nodes - Main workflow
     workflow.add_node("questionnaire", questionnaire_node)
     workflow.add_node("validation", validation_node)
     workflow.add_node("prompt", prompt_node)
@@ -61,10 +101,17 @@ def build_graph() -> StateGraph:
     workflow.add_node("excel_generator", excel_generator_node)
     workflow.add_node("error_handler", error_handler_node)
     
+    # Add follow-up nodes
+    workflow.add_node("followup_handler", followup_handler_node)
+    workflow.add_node("budget_analyzer", budget_analyzer_node)
+    workflow.add_node("cost_breakup_analyzer", cost_breakup_analyzer_node)
+    workflow.add_node("manpower_analyzer", manpower_analyzer_node)
+    workflow.add_node("followup_excel_generator", followup_excel_generator_node)
+    
     # Set entry point
     workflow.set_entry_point("questionnaire")
     
-    # Define edges
+    # Define edges - Main workflow
     workflow.add_edge("questionnaire", "validation")
     
     # Conditional edge after validation
@@ -82,8 +129,37 @@ def build_graph() -> StateGraph:
     workflow.add_edge("category_workers", "aggregator")
     workflow.add_edge("aggregator", "excel_generator")
     
-    # Final edges to END
-    workflow.add_edge("excel_generator", END)
+    # After main Excel generation, go to follow-up handler
+    workflow.add_edge("excel_generator", "followup_handler")
+    
+    # Conditional edge from followup_handler to appropriate analyzer
+    workflow.add_conditional_edges(
+        "followup_handler",
+        should_continue_followup,
+        {
+            "budget": "budget_analyzer",
+            "cost_breakup": "cost_breakup_analyzer",
+            "manpower": "manpower_analyzer",
+            "end": END
+        }
+    )
+    
+    # All analyzers go to followup_excel_generator
+    workflow.add_edge("budget_analyzer", "followup_excel_generator")
+    workflow.add_edge("cost_breakup_analyzer", "followup_excel_generator")
+    workflow.add_edge("manpower_analyzer", "followup_excel_generator")
+    
+    # After generating follow-up Excel, check if more follow-ups remain
+    workflow.add_conditional_edges(
+        "followup_excel_generator",
+        check_followup_completion,
+        {
+            "continue": "followup_handler",  # Loop back for more follow-ups
+            "end": END  # All 3 follow-ups done
+        }
+    )
+    
+    # Error handler goes to END
     workflow.add_edge("error_handler", END)
     
     return workflow
@@ -92,6 +168,12 @@ def build_graph() -> StateGraph:
 def run_interactive():
     """
     Run the project planner in interactive CLI mode.
+    
+    The workflow includes:
+    1. Project questionnaire
+    2. Task generation
+    3. Main Excel generation
+    4. Sequential follow-up analyses (budget, cost breakup, manpower)
     """
     print("\n" + "=" * 70)
     print("   🏗️  CONSTRUCTION PROJECT PLANNING AGENT  🏗️")
@@ -100,6 +182,7 @@ def run_interactive():
     print("\n📋 This tool generates comprehensive project plans:")
     print("   • High-level Plan: 100+ tasks")
     print("   • Detailed Plan: 400+ tasks with dates & dependencies")
+    print("   • Follow-up analyses: Budget, Cost Breakup, Manpower")
     print("=" * 70)
     
     # Build and compile the graph
@@ -117,18 +200,8 @@ def run_interactive():
         
         # Check if we have a successful output
         if final_state.get("excel_path"):
-            print("\n" + "=" * 70)
-            print("   ✅ PROJECT PLAN GENERATED SUCCESSFULLY!")
-            print("=" * 70)
-            print(f"\n📂 Output file: {final_state['excel_path']}")
-            print(f"📊 Total tasks: {final_state.get('aggregated_json', {}).get('total_tasks', 0)}")
-            
-            # Print category breakdown
-            breakdown = final_state.get('aggregated_json', {}).get('category_breakdown', [])
-            if breakdown:
-                print("\n📋 Category Breakdown:")
-                for line in breakdown:
-                    print(line)
+            # Show final summary
+            show_final_summary(final_state)
         else:
             print("\n" + "=" * 70)
             print("   ❌ PROJECT PLAN GENERATION FAILED")
@@ -143,12 +216,13 @@ def run_interactive():
         raise
 
 
-def run_with_responses(responses: Dict[str, Any]):
+def run_with_responses(responses: Dict[str, Any], include_followups: bool = True):
     """
     Run the project planner with pre-defined responses (for testing/automation).
     
     Args:
         responses: Pre-defined questionnaire responses
+        include_followups: Whether to include follow-up processing (default True)
         
     Returns:
         Final state dictionary
@@ -164,6 +238,7 @@ def run_with_responses(responses: Dict[str, Any]):
     def questionnaire_with_responses(state: GraphState) -> GraphState:
         return questionnaire_node_with_input(state, responses)
     
+    # Add main workflow nodes
     workflow.add_node("questionnaire", questionnaire_with_responses)
     workflow.add_node("validation", validation_node)
     workflow.add_node("prompt", prompt_node)
@@ -172,6 +247,14 @@ def run_with_responses(responses: Dict[str, Any]):
     workflow.add_node("aggregator", aggregator_node)
     workflow.add_node("excel_generator", excel_generator_node)
     workflow.add_node("error_handler", error_handler_node)
+    
+    # Add follow-up nodes if enabled
+    if include_followups:
+        workflow.add_node("followup_handler", followup_handler_node)
+        workflow.add_node("budget_analyzer", budget_analyzer_node)
+        workflow.add_node("cost_breakup_analyzer", cost_breakup_analyzer_node)
+        workflow.add_node("manpower_analyzer", manpower_analyzer_node)
+        workflow.add_node("followup_excel_generator", followup_excel_generator_node)
     
     workflow.set_entry_point("questionnaire")
     workflow.add_edge("questionnaire", "validation")
@@ -189,7 +272,40 @@ def run_with_responses(responses: Dict[str, Any]):
     workflow.add_edge("orchestrator", "category_workers")
     workflow.add_edge("category_workers", "aggregator")
     workflow.add_edge("aggregator", "excel_generator")
-    workflow.add_edge("excel_generator", END)
+    
+    if include_followups:
+        # After main Excel generation, go to follow-up handler
+        workflow.add_edge("excel_generator", "followup_handler")
+        
+        # Conditional edge from followup_handler to appropriate analyzer
+        workflow.add_conditional_edges(
+            "followup_handler",
+            should_continue_followup,
+            {
+                "budget": "budget_analyzer",
+                "cost_breakup": "cost_breakup_analyzer",
+                "manpower": "manpower_analyzer",
+                "end": END
+            }
+        )
+        
+        # All analyzers go to followup_excel_generator
+        workflow.add_edge("budget_analyzer", "followup_excel_generator")
+        workflow.add_edge("cost_breakup_analyzer", "followup_excel_generator")
+        workflow.add_edge("manpower_analyzer", "followup_excel_generator")
+        
+        # After generating follow-up Excel, check if more follow-ups remain
+        workflow.add_conditional_edges(
+            "followup_excel_generator",
+            check_followup_completion,
+            {
+                "continue": "followup_handler",
+                "end": END
+            }
+        )
+    else:
+        workflow.add_edge("excel_generator", END)
+    
     workflow.add_edge("error_handler", END)
     
     app = workflow.compile()

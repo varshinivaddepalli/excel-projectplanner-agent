@@ -5,3 +5,7 @@ venv/
 intake_questionaire.txt
 wbs_with_dependencies.xlsx
 output/
+PMS_AI_agent.pdf
+generate_architecture_diagram.py
+generate_documentation.py
+architecture_diagram.png

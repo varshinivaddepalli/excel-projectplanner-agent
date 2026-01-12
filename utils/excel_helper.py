@@ -50,6 +50,7 @@ def format_excel_sheet(ws, columns: List[str]) -> None:
     
     # Set column widths based on header names
     column_widths = {
+        # Project Plan columns
         "Phase Name": 20,
         "Activity Name": 25,
         "Task Name": 35,
@@ -64,7 +65,32 @@ def format_excel_sheet(ws, columns: List[str]) -> None:
         "Priority": 10,
         "Predecessor": 15,
         "Dependency Type": 15,
-        "Successor": 15
+        "Successor": 15,
+        # Budget Estimate columns
+        "Phase": 20,
+        "Activity": 25,
+        "Cost Head": 20,
+        "Budget Type": 18,
+        "Apx.Qty": 12,
+        "Unit": 12,
+        "Rate": 12,
+        "Apx.Budget": 15,
+        "Contingency %": 15,
+        # Cost Breakup columns
+        "Work Name": 25,
+        "Description": 40,
+        "Category": 15,
+        "Apx. Material Cost": 18,
+        "Total Cost": 15,
+        # Manpower Estimate columns
+        "Role": 20,
+        "Skill Level": 15,
+        "No. of Workers": 15,
+        "Productivity (Unit/Day)": 20,
+        "Duration (Days)": 15,
+        "Man-Days": 12,
+        "Apx. Daily Rate": 15,
+        "Apx. Cost": 15
     }
     
     for col_idx, header in enumerate(columns, 1):

@@ -22,6 +22,7 @@ from nodes.orchestrator import orchestrator_node
 from nodes.workers import category_worker_node
 from nodes.aggregator import aggregator_node
 from nodes.excel_generator import excel_generator_node
+from config import FOLLOWUP_QUESTIONS
 
 app = FastAPI(
     title="Construction Project Planner API",
@@ -75,6 +76,17 @@ class ProjectPlanResponse(BaseModel):
     generation_time_seconds: float = 0
 
 
+class FollowupQuestion(BaseModel):
+    """Single follow-up question"""
+    id: int
+    question: str
+
+
+class FollowupQuestionsResponse(BaseModel):
+    """Response containing follow-up questions"""
+    questions: list[FollowupQuestion]
+
+
 # Build the graph once
 def build_api_graph(responses: Dict[str, Any]):
     """Build graph with provided responses."""
@@ -111,7 +123,8 @@ async def root():
         "service": "Construction Project Planner",
         "endpoints": {
             "generate": "POST /generate - Generate project plan",
-            "download": "GET /download/{filename} - Download Excel file"
+            "download": "GET /download/{filename} - Download Excel file",
+            "followup_questions": "GET /followup-questions - Get follow-up questions after plan generation"
         }
     }
 
@@ -179,8 +192,25 @@ async def download_file(filename: str):
     )
 
 
+@app.get("/followup-questions", response_model=FollowupQuestionsResponse)
+async def get_followup_questions():
+    """
+    Get follow-up questions after project plan generation.
+    
+    Returns a list of available follow-up options:
+    1. Budget estimate
+    2. Cost breakup by work category
+    3. Manpower estimates
+    """
+    return FollowupQuestionsResponse(
+        questions=[FollowupQuestion(**q) for q in FOLLOWUP_QUESTIONS]
+    )
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
 
 

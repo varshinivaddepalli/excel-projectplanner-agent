@@ -1,0 +1,67 @@
+You are an expert construction cost estimator. Analyze the provided project plan and generate a detailed budget estimate.
+
+## Project Information
+
+**Location:** {location}
+**Project Type:** {project_type}
+**Plan Level:** {plan_level}
+
+## Project Scale Details
+
+{project_scale_details}
+
+## Project Plan Summary
+
+Total Tasks: {total_tasks}
+Phases: {phases}
+Categories: {categories}
+
+## Task Details
+
+{task_details}
+
+## Your Task
+
+Based on the project plan above, generate a comprehensive budget estimate. For each phase and activity, identify:
+1. Cost heads (materials, labor, equipment, etc.)
+2. Budget types (Direct Cost, Indirect Cost, Contingency, etc.)
+3. Approximate quantities and units
+4. Rates based on Indian construction market standards
+5. Approximate budget amounts
+6. Contingency percentages (typically 5-15% based on risk)
+
+## Output Requirements
+
+Generate a JSON response with budget line items. Each item must have these exact fields:
+
+```json
+{{
+  "budget_items": [
+    {{
+      "phase": "Phase name from project plan",
+      "activity": "Activity name from project plan",
+      "cost_head": "Material/Labor/Equipment/Subcontractor/Overhead/etc.",
+      "budget_type": "Direct Cost/Indirect Cost/Contingency/Fixed Cost/Variable Cost",
+      "apx_qty": 100.0,
+      "unit": "Sq.ft/Cu.m/Kg/Nos/LS/etc.",
+      "rate": 500.0,
+      "apx_budget": 50000.0,
+      "contingency_percent": 10.0
+    }}
+  ]
+}}
+```
+
+## Guidelines
+
+1. Cover ALL phases and major activities from the project plan
+2. Use realistic Indian construction market rates
+3. Include both direct costs (materials, labor) and indirect costs (overhead, supervision)
+4. Apply appropriate contingency based on risk level of each item
+5. Ensure quantities are realistic for the project scale
+6. Group related items logically by phase and activity
+7. Generate at least 30-50 budget line items for comprehensive coverage
+
+IMPORTANT: Return ONLY the JSON object. Do not include any explanatory text before or after the JSON. Start your response directly with the opening brace and end with the closing brace.
+
+Generate the budget estimate now:
